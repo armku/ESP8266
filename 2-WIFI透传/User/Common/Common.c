@@ -2,11 +2,7 @@
 #include "stm32f10x.h"
 #include <stdarg.h>
 
-
-
-static char *                 itoa                                ( int value, char * string, int radix );
-
-
+static char *                 itoa(int value, char * string, int radix);
 
 /*
  * 函数名：USART2_printf
@@ -15,92 +11,90 @@ static char *                 itoa                                ( int value, c
  *		     -Data   要发送到串口的内容的指针
  *			   -...    其他参数
  * 输出  ：无
- * 返回  ：无 
+ * 返回  ：无
  * 调用  ：外部调用
  *         典型应用USART2_printf( USART2, "\r\n this is a demo \r\n" );
  *            		 USART2_printf( USART2, "\r\n %d \r\n", i );
  *            		 USART2_printf( USART2, "\r\n %s \r\n", j );
  */
-void USART_printf ( USART_TypeDef * USARTx, char * Data, ... )
+void USART_printf(USART_TypeDef * USARTx, char * Data, ...)
 {
 	const char *s;
-	int d;   
+	int d;
 	char buf[16];
 
-	
+
 	va_list ap;
 	va_start(ap, Data);
 
-	while ( * Data != 0 )     // 判断是否到达字符串结束符
-	{				                          
-		if ( * Data == 0x5c )  //'\'
-		{									  
-			switch ( *++Data )
+	while (*Data != 0)     // 判断是否到达字符串结束符
+	{
+		if (*Data == 0x5c)  //'\'
+		{
+			switch (*++Data)
 			{
-				case 'r':							          //回车符
+			case 'r':							          //回车符
 				USART_SendData(USARTx, 0x0d);
-				Data ++;
+				Data++;
 				break;
 
-				case 'n':							          //换行符
-				USART_SendData(USARTx, 0x0a);	
-				Data ++;
+			case 'n':							          //换行符
+				USART_SendData(USARTx, 0x0a);
+				Data++;
 				break;
 
-				default:
-				Data ++;
+			default:
+				Data++;
 				break;
-			}			 
+			}
 		}
-		
-		else if ( * Data == '%')
+
+		else if (*Data == '%')
 		{									  //
-			switch ( *++Data )
-			{				
-				case 's':										  //字符串
+			switch (*++Data)
+			{
+			case 's':										  //字符串
 				s = va_arg(ap, const char *);
-				
-				for ( ; *s; s++) 
+
+				for (; *s; s++)
 				{
-					USART_SendData(USARTx,*s);
-					while( USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET );
+					USART_SendData(USARTx, *s);
+					while (USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET);
 				}
-				
+
 				Data++;
-				
+
 				break;
 
-				case 'd':			
-					//十进制
+			case 'd':
+				//十进制
 				d = va_arg(ap, int);
-				
+
 				itoa(d, buf, 10);
-				
-				for (s = buf; *s; s++) 
+
+				for (s = buf; *s; s++)
 				{
-					USART_SendData(USARTx,*s);
-					while( USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET );
+					USART_SendData(USARTx, *s);
+					while (USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET);
 				}
-				
+
 				Data++;
-				
+
 				break;
-				
-				default:
+
+			default:
 				Data++;
-				
+
 				break;
-				
-			}		 
+
+			}
 		}
-		
+
 		else USART_SendData(USARTx, *Data++);
-		
-		while ( USART_GetFlagStatus ( USARTx, USART_FLAG_TXE ) == RESET );
-		
+
+		while (USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET);
 	}
 }
-
 
 /*
  * 函数名：itoa
@@ -113,7 +107,7 @@ void USART_printf ( USART_TypeDef * USARTx, char * Data, ... )
  * 返回  ：无
  * 调用  ：被USART2_printf()调用
  */
-static char * itoa( int value, char *string, int radix )
+static char * itoa(int value, char *string, int radix)
 {
 	int     i, d;
 	int     flag = 0;
@@ -140,7 +134,7 @@ static char * itoa( int value, char *string, int radix )
 
 		/* Make the value positive. */
 		value *= -1;
-		
+
 	}
 
 	for (i = 10000; i > 0; i /= 10)
@@ -161,6 +155,3 @@ static char * itoa( int value, char *string, int radix )
 	return string;
 
 } /* NCL_Itoa */
-
-
-
